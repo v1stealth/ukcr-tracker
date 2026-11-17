@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weekly Tracker</title>
+<style>
+:root{--text:#e8ecf5;--muted:#9aa4b8;--line:rgba(255,255,255,.13);--card:rgba(14,18,30,.62);--accent:#5b8cff;--green:#2ee6a0}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);background:#07090f;padding-bottom:70px}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:#07090f center/cover no-repeat}
+.bg i{position:absolute;width:55vmax;height:55vmax;border-radius:50%;filter:blur(90px);opacity:.45;animation:drift 22s ease-in-out infinite alternate}
+.bg i:nth-child(1){background:#2a56ff;top:-20%;left:-10%}
+.bg i:nth-child(2){background:#12c48b;bottom:-25%;right:-10%;animation-duration:28s}
+.bg i:nth-child(3){background:#8a3cff;top:30%;left:35%;animation-duration:34s;opacity:.3}
+@keyframes drift{to{transform:translate(12vmax,8vmax) scale(1.2)}}
+header{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--card);backdrop-filter:blur(12px);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--green));display:grid;place-items:center;font-weight:700;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+nav{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.btn{position:relative;overflow:hidden;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);padding:10px 18px;border-radius:12px;font:inherit;cursor:pointer;text-decoration:none;display:inline-block;transition:transform .2s,border-color .2s,box-shadow .2s}
+.btn::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-20deg);transition:left .5s}
+.btn:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 6px 20px rgba(91,140,255,.35)}
+.btn:hover::after{left:130%}
+.btn.on{border-color:var(--accent);background:rgba(91,140,255,.2)}
+main{max-width:980px;margin:0 auto;padding:28px 22px;animation:fade .5s}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}}
+.status{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.dot{width:26px;height:26px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite;flex:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,230,160,.7)}70%{box-shadow:0 0 0 18px rgba(46,230,160,0)}100%{box-shadow:0 0 0 0 rgba(46,230,160,0)}}
+.status b{font-size:1.05rem}
+.bar{flex:1;min-width:200px;height:22px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--line);overflow:hidden;position:relative}
+.bar span{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width 1.4s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden}
+.bar span::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);animation:sheen 2.2s infinite}
+@keyframes sheen{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.pct{min-width:48px;text-align:right;font-variant-numeric:tabular-nums}
+.hero{text-align:center;padding:80px 10px 70px}
+.hero h1{font-size:clamp(2rem,6vw,3.6rem);letter-spacing:-.02em}
+.hero p{color:var(--muted);margin-top:12px;font-size:1.1rem}
+h2{margin:6px 0 16px}
+.card{background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px}
+.row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.muted{color:var(--muted);font-size:.92rem}
+.task{margin:16px 0}
+.task .top{display:flex;justify-content:space-between;margin-bottom:6px;gap:10px}
+.bar.sm{height:14px}
+.notes p{margin:0 0 12px;line-height:1.65}
+.uptime{position:fixed;left:16px;bottom:14px;background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:9px 14px;font-size:.85rem;display:flex;align-items:center;gap:10px}
+.uptime .dot{width:10px;height:10px;animation-duration:2.4s}
+.uptime b{font-variant-numeric:tabular-nums}
+.ed input,.ed textarea{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 11px;font:inherit;margin:4px 0 10px}
+.ed textarea{min-height:120px}
+.ed label{font-size:.8rem;color:var(--muted)}
+.ed .g{display:grid;grid-template-columns:1fr 130px;gap:10px}
+.sm2{padding:6px 12px;font-size:.85rem}
+.msg{margin-left:12px}
+.elink{color:var(--muted);font-size:.8rem;text-decoration:none}
+.av{position:relative;flex:none}
+.sd{position:absolute;right:-3px;bottom:-3px;width:14px;height:14px;border-radius:50%;border:3px solid #0b0f1a;background:#7c869e;display:none}
+.dct{display:flex;flex-direction:column;line-height:1.3;max-width:220px}
+.dct small{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:700px){.dct{display:none}}
+#pv{position:fixed;right:14px;bottom:14px;max-width:290px;background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.78rem;line-height:1.45;color:var(--muted);z-index:20}
+#pv .btn{margin-top:8px;padding:5px 14px;font-size:.8rem}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.gallery img{width:100%;height:150px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
+.ed .th{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}.ed .th div{display:flex;flex-direction:column;gap:4px;align-items:center}
+.ed .th img{width:84px;height:62px;object-fit:cover;border-radius:8px}
+.tag{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:2px 8px;margin-left:8px}
+</style>
+</head>
+<body>
+<div class="bg" id="bg"><i></i><i></i><i></i></div>
+<header>
+  <div class="av"><div class="logo" id="logo"></div><span class="sd" id="sd"></span></div>
+  <div class="dct" id="dct"></div>
+  <nav id="nav"></nav>
+</header>
+<main id="app"></main>
+<div class="uptime"><span class="dot"></span><span>Uptime <b id="up">...</b></span><a class="elink" href="#admin">Edit</a></div>
+
+<div id="pv" hidden>Privacy: when you visit, this site logs your IP address, approximate location, internet provider, device, browser, language, screen size, the pages you view and how long you stay to a private Discord channel, to monitor traffic and fix errors.<br><button class="btn" id="pvok">OK</button></div>
+
+<script>
+/* ============ EDIT THIS SECTION TO UPDATE YOUR SITE ============ */
+let SITE = {
+  title: "My Weekly Tracker",
+  tagline: "What I’m working on, week by week.",
+  logo: "",                         // image URL or file name, e.g. "logo.png" (leave "" for a letter)
+  bgImage: "",                      // background image, e.g. "background.jpg" (leave "" for the animated glow)
+  launchDate: "2026-11-17T00:00:00",// uptime counts from here
+  currentWeek: 2,                   // which week shows in the Weekly Progress bar
+  discordId: ""                     // your Discord user ID: shows your avatar + status in the top-left (can also be set in the Edit page)
+};
+
+let WEEKS = [
+  { id: 1, title: "Week 1: Getting started", dates: "10 – 16 Nov",
+    summary: "Set up the project and planned the next steps.",
+    tasks: [
+      { name: "Project setup", progress: 100, note: "Everything installed and working." },
+      { name: "Planning", progress: 100, note: "Wrote down goals for the next few weeks." }
+    ],
+    notes: "Write your in-depth overview here.\nA new line starts a new paragraph." },
+  { id: 2, title: "Week 2: Building", dates: "17 – 23 Nov",
+    summary: "Working on the main features.",
+    tasks: [
+      { name: "Feature A", progress: 70, note: "Core part done, polishing left." },
+      { name: "Feature B", progress: 35, note: "Started, still early." },
+      { name: "Testing", progress: 10, note: "" }
+    ],
+    notes: "Add as much text as you like here.\nEdit it any time and re-upload the file." }
+];
+
+const PAGES = [   // the 4 buttons in the top bar
+  { id: "home",  label: "Home" },
+  { id: "weeks", label: "All Weeks" },
+  { id: "week-latest", label: "Latest Week" },
+  { id: "contact", label: "Ask me" },
+  { id: "about", label: "About" }
+];
+let ABOUT = "Write about yourself or the project here.\nEach new line is a new paragraph.";
+/* ============ END OF EDIT SECTION ============ */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const paras = t => t.split("\n").filter(Boolean).map(p => `<p>${esc(p)}</p>`).join("");
+const avg = w => w.tasks.length ? Math.round(w.tasks.reduce((a, t) => a + t.progress, 0) / w.tasks.length) : 0;
+const bar = (p, sm) => `<div class="bar ${sm ? "sm" : ""}"><span data-w="${p}"></span></div>`;
+
+let DC = null;
+const SC = { online: "#2ee6a0", idle: "#f5b942", dnd: "#ff5b6e", offline: "#7c869e" };
+const SL = { online: "Online", idle: "Idle", dnd: "Do not disturb", offline: "Offline" };
+async function discord() {   // live Discord avatar + status via Lanyard (you must be in the Lanyard Discord server)
+  if (!SITE.discordId) return;
+  try {
+    const j = await (await fetch("https://api.lanyard.rest/v1/users/" + encodeURIComponent(SITE.discordId))).json();
+    if (!j.success) return;
+    const d = j.data, u = d.discord_user, st = d.discord_status || "offline", acts = d.activities || [];
+    const cs = acts.find(a => a.type === 4), g = acts.find(a => a.type !== 4);
+    DC = { avatar: u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith("a_") ? "gif" : "png"}?size=128` : "",
+           name: u.global_name || u.username, st, sub: (cs && cs.state) || (g && g.name) || SL[st] };
+    look();
+  } catch (e) {}
+}
+
+function look() {
+  document.title = SITE.title;
+  $("bg").style.backgroundImage = SITE.bgImage ? `url("${SITE.bgImage}")` : "";
+  const pic = DC && DC.avatar ? DC.avatar : SITE.logo;
+  $("logo").innerHTML = pic ? `<img src="${esc(pic)}" alt="">` : esc((SITE.title || "W")[0]);
+  const sd = $("sd"), dt = $("dct");
+  if (DC) { sd.style.display = "block"; sd.style.background = SC[DC.st]; sd.title = SL[DC.st];
+    dt.innerHTML = `<b>${esc(DC.name)}</b><small>${esc(DC.sub)}</small>`; }
+}
+
+const latestId = () => (([...WEEKS].reverse().find(w => !w.archived) || WEEKS[WEEKS.length - 1]) || {}).id;
+function render() {
+  let h = location.hash.slice(1) || "home";
+  if (h === "week-latest") h = "week-" + latestId();
+  $("nav").innerHTML = PAGES.map(p => {
+    const on = p.id === h || (p.id === "week-latest" && h === "week-" + latestId());
+    return `<a class="btn ${on ? "on" : ""}" href="#${p.id}">${esc(p.label)}</a>`;
+  }).join("");
+
+  if (h === "admin") return admin();
+  const cur = WEEKS.find(w => w.id === SITE.currentWeek) || WEEKS[WEEKS.length - 1];
+  const card = w => `
+    <div class="card"><div class="row">
+      <div><b>${esc(w.title)}</b><div class="muted">${esc(w.dates)} · ${esc(w.summary)}</div></div>
+      <a class="btn" href="#week-${w.id}">View in depth</a></div>
+      <div style="margin-top:12px">${bar(avg(w), true)}</div></div>`;
+  const sec = (t, l) => l.length ? `<h2>${t}</h2>${l.map(w => card(w)).join("")}` : "";
+  const rev = [...WEEKS].reverse();
+  const weekCards = sec("Current weeks", rev.filter(w => !w.archived)) + sec("Past weeks", rev.filter(w => w.archived));
+
+  let html;
+  if (h === "home") {
+    html = `<div class="status"><span class="dot"></span><b>Weekly Progress</b>${bar(avg(cur))}<span class="pct">${avg(cur)}%</span></div>
+      <div class="hero"><h1>${esc(SITE.title)}</h1><p>${esc(SITE.tagline)}</p></div>
+      ${weekCards}`;
+  } else if (h === "weeks") {
+    html = `<h2>All Weeks</h2>${weekCards}`;
+  } else if (h === "contact") {
+    html = `<h2>Ask me a question</h2><div class="card ed"><p class="muted" style="margin-bottom:12px">Ask about my work and attach images if it helps. Your message goes privately to me on Discord, along with your IP address and approximate location so I can block abuse.</p>
+      <form id="cf"><label>Your name (optional)</label><input name="name" maxlength="100">
+      <label>How should I reply? Discord tag or email (optional)</label><input name="contact" maxlength="150">
+      <label>Your question</label><textarea name="question" required maxlength="1800"></textarea>
+      <label>Images (optional: up to 4, PNG/JPG/GIF/WebP, 8 MB total)</label><input type="file" name="images" accept="image/png,image/jpeg,image/gif,image/webp" multiple>
+      <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <button class="btn on" type="submit">Send</button><span class="muted msg" id="cm"></span></form></div>`;
+  } else if (h === "about") {
+    html = `<h2>About</h2><div class="card notes">${paras(ABOUT)}</div>`;
+  } else {
+    const w = WEEKS.find(x => "week-" + x.id === h);
+    html = !w ? `<h2>Page not found</h2><a class="btn" href="#home">Back home</a>` : `
+      <a class="btn" href="#weeks">&larr; All weeks</a>
+      <h2 style="margin-top:18px">${esc(w.title)}</h2>
+      <div class="muted" style="margin-bottom:14px">${esc(w.dates)}</div>
+      <div class="status" style="margin-bottom:18px"><b>Overall</b>${bar(avg(w))}<span class="pct">${avg(w)}%</span></div>
+      <div class="card">${w.tasks.map(t => `<div class="task"><div class="top"><b>${esc(t.name)}</b><span class="muted">${t.progress}%</span></div>${bar(t.progress, true)}${t.note ? `<div class="muted" style="margin-top:6px">${esc(t.note)}</div>` : ""}</div>`).join("")}</div>
+      ${(w.images || []).length ? `<div class="gallery">${w.images.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join("")}</div>` : ""}<div class="card notes"><h3 style="margin-bottom:12px">In-depth overview</h3>${paras(w.notes)}</div>`;
+  }
+  const app = $("app");
+  app.style.animation = "none"; app.offsetHeight; app.style.animation = "";
+  app.innerHTML = html;
+  if (h === "contact") bindContact();
+  window.scrollTo(0, 0);
+  requestAnimationFrame(() => requestAnimationFrame(() =>
+    app.querySelectorAll("[data-w]").forEach(el => el.style.width = el.dataset.w + "%")));
+}
+
+function bindContact() {
+  const f = $("cf"), m = $("cm"); if (!f) return;
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const files = [...f.elements.images.files];
+    if (files.length > 4) return m.textContent = "Maximum 4 images.";
+    if (files.reduce((a, x) => a + x.size, 0) > 8 * 1024 * 1024) return m.textContent = "Images are over 8 MB in total.";
+    m.textContent = "Sending...";
+    const r = await fetch("/api/contact", { method: "POST", body: new FormData(f) }).catch(() => null);
+    if (r && r.ok) { f.reset(); m.textContent = "Sent! I’ll get back to you."; }
+    else m.textContent = r ? (await r.text()).slice(0, 140) : "Couldn’t send. Try again.";
+  };
+}
+
+let UP = null;   // real uptime from UptimeRobot (via /api/uptime); falls back to the counter below
+async function loadUptime() {
+  try {
+    const j = await (await fetch("/api/uptime")).json();
+    if (!j.ok) return;
+    UP = j; document.querySelector(".uptime .dot").style.background = j.status === 2 ? "" : "#ff5b6e"; tick();
+  } catch (e) {}
+}
+function tick() {
+  if (UP) { const v = UP.d30 || UP.all; $("up").textContent = (+v).toFixed(2) + "% (30 days)" + (UP.status === 2 ? "" : " · DOWN"); return; }
+  let s = Math.max(0, Math.floor((Date.now() - new Date(SITE.launchDate)) / 1000));
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  $("up").textContent = `${d}d ${h}h ${m}m ${s % 60}s`;
+}
+
+let pw = sessionStorage.getItem("pw") || "", draft = null;
+const post = (body, p) => fetch("/api/data", { method: "POST", headers: { "content-type": "application/json", "x-admin-password": p }, body: JSON.stringify(body) });
+function apply(d) { SITE = Object.assign({ discordId: SITE.discordId }, d.SITE); WEEKS = d.WEEKS; ABOUT = d.ABOUT || ""; look(); discord(); }
+
+function admin() {
+  const app = $("app");
+  if (!pw) {
+    app.innerHTML = `<div class="card ed" style="max-width:380px;margin:60px auto"><h2>Edit login</h2><label>Password</label><input id="pw" type="password"><button class="btn" id="go">Log in</button><span class="muted msg" id="m"></span></div>`;
+    $("go").onclick = async () => {
+      const p = $("pw").value; $("m").textContent = "Checking...";
+      const r = await post({ check: true }, p).catch(() => null);
+      if (r && r.ok) { pw = p; sessionStorage.setItem("pw", p); admin(); } else $("m").textContent = !r ? "Couldn’t reach the server." : r.status === 401 ? "Wrong password." : r.status === 429 ? "Too many attempts. Wait 15 minutes." : "Server error " + r.status + ": the TRACKER storage or ADMIN_PASSWORD isn’t set up (open /api/health to see which).";
+    };
+    return;
+  }
+  if (!draft) draft = JSON.parse(JSON.stringify({ SITE, WEEKS, ABOUT }));
+  const D = draft;
+  const inp = (l, p, v, n) => `<label>${l}</label><input ${n ? 'type="number" min="0" max="100"' : ""} data-p="${p}" value="${esc(v ?? "")}">`;
+  app.innerHTML = `<div class="ed"><h2>Edit site</h2>
+  <div class="card"><b>Site controls</b><p class="muted" style="margin:6px 0 10px">Turn the whole site off (visitors see a maintenance page) or register the Discord slash commands. Once set up, you can also use /site on, /site off and /site status in Discord.</p><button class="btn sm2" data-a="siteoff">Turn site OFF</button> <button class="btn sm2" data-a="regcmds">Register Discord commands</button></div>
+  <div class="card">${inp("Site title", "SITE.title", D.SITE.title)}${inp("Tagline", "SITE.tagline", D.SITE.tagline)}${inp("Logo image URL", "SITE.logo", D.SITE.logo)}<label>Or upload a logo</label><input type="file" accept="image/*" data-up="logo">${inp("Background image URL", "SITE.bgImage", D.SITE.bgImage)}<label>Or upload a background</label><input type="file" accept="image/*" data-up="bgImage">${inp("Uptime start date (e.g. 2026-11-17T00:00:00)", "SITE.launchDate", D.SITE.launchDate)}${inp("Current week number (home progress bar)", "SITE.currentWeek", D.SITE.currentWeek, 1)}${inp("Discord user ID (shows your avatar + status)", "SITE.discordId", D.SITE.discordId)}
+  <label>About text</label><textarea data-p="ABOUT">${esc(D.ABOUT)}</textarea></div>
+  ${D.WEEKS.map((w, i) => `<div class="card"><div class="row"><b>Week ${esc(w.id)}${w.archived ? ' <span class="tag">Past</span>' : ""}</b><span><button class="btn sm2" data-a="up" data-i="${i}">↑</button> <button class="btn sm2" data-a="down" data-i="${i}">↓</button> <button class="btn sm2" data-a="arch" data-i="${i}">${w.archived ? "Move to current" : "Move to past weeks"}</button> <button class="btn sm2" data-a="delw" data-i="${i}">Delete week</button></span></div>
+  ${inp("Title", `WEEKS.${i}.title`, w.title)}${inp("Dates", `WEEKS.${i}.dates`, w.dates)}${inp("Short summary", `WEEKS.${i}.summary`, w.summary)}
+  <label>In-depth overview</label><textarea data-p="WEEKS.${i}.notes">${esc(w.notes)}</textarea>
+  <label>Images for this week</label><div class="th">${(w.images || []).map((u, k) => `<div><img src="${esc(u)}" alt=""><button class="btn sm2" data-a="delimg" data-i="${i}" data-j="${k}">✕</button></div>`).join("")}</div><input type="file" accept="image/*" multiple data-up="week" data-i="${i}">
+  ${w.tasks.map((t, j) => `<div class="task"><div class="g"><div>${inp("Task", `WEEKS.${i}.tasks.${j}.name`, t.name)}</div><div>${inp("Percent done", `WEEKS.${i}.tasks.${j}.progress`, t.progress, 1)}</div></div>${inp("Note (optional)", `WEEKS.${i}.tasks.${j}.note`, t.note)}<button class="btn sm2" data-a="delt" data-i="${i}" data-j="${j}">Remove task</button></div>`).join("")}
+  <button class="btn sm2" data-a="addt" data-i="${i}">+ Add task</button></div>`).join("")}
+  <button class="btn" data-a="addw">+ Add week</button> <button class="btn on" data-a="save">Save changes</button> <button class="btn" data-a="out">Log out</button><span class="muted msg" id="sm"></span></div>`;
+}
+
+document.addEventListener("input", e => {
+  const p = e.target.dataset.p; if (!p || !draft) return;
+  const v = e.target.type === "number" ? Math.min(100, Math.max(0, Number(e.target.value) || 0)) : e.target.value;
+  const k = p.split("."); let o = draft;
+  while (k.length > 1) o = o[k.shift()];
+  o[k[0]] = v;
+});
+
+document.addEventListener("click", async e => {
+  const a = e.target.dataset.a; if (!a || !draft) return;
+  const i = +e.target.dataset.i, j = +e.target.dataset.j, D = draft;
+  if (a === "addw") D.WEEKS.push({ id: Math.max(0, ...D.WEEKS.map(w => w.id)) + 1, title: "New week", dates: "", summary: "", tasks: [], notes: "" });
+  else if (a === "delw") { if (confirm("Delete this week?")) D.WEEKS.splice(i, 1); }
+  else if (a === "addt") D.WEEKS[i].tasks.push({ name: "New task", progress: 0, note: "" });
+  else if (a === "delt") D.WEEKS[i].tasks.splice(j, 1);
+  else if (a === "up") { if (i > 0) [D.WEEKS[i - 1], D.WEEKS[i]] = [D.WEEKS[i], D.WEEKS[i - 1]]; }
+  else if (a === "down") { if (i < D.WEEKS.length - 1) [D.WEEKS[i + 1], D.WEEKS[i]] = [D.WEEKS[i], D.WEEKS[i + 1]]; }
+  else if (a === "arch") D.WEEKS[i].archived = !D.WEEKS[i].archived;
+  else if (a === "delimg") D.WEEKS[i].images.splice(j, 1);
+  else if (a === "siteoff" || a === "regcmds") {
+    if (a === "siteoff" && !confirm("Turn the whole site OFF? Visitors will see a maintenance page. Turn it back on with /site on in Discord, or the owner login on that page.")) return;
+    const m = $("sm"); m.textContent = "Working...";
+    const r = await fetch(a === "siteoff" ? "/api/site" : "/api/register", { method: "POST", headers: { "content-type": "application/json", "x-admin-password": pw }, body: JSON.stringify({ on: false }) }).catch(() => null);
+    m.textContent = !r ? "Couldn’t reach the server." : a === "siteoff" ? (r.ok ? "Site is now OFF. Reload to see the maintenance page." : "Failed: " + r.status + " " + (await r.text()).slice(0, 100)) : (await r.text()).slice(0, 220);
+    return;
+  }
+  else if (a === "out") { pw = ""; sessionStorage.removeItem("pw"); draft = null; }
+  else if (a === "save") {
+    const m = $("sm"); m.textContent = "Saving...";
+    const r = await post(D, pw).catch(() => null);
+    if (r && r.ok) { apply(JSON.parse(JSON.stringify(D))); m.textContent = "Saved. It’s live for everyone."; }
+    else m.textContent = "Save failed: " + (r ? r.status + " " + (await r.text()).slice(0, 120) : "couldn’t reach the server");
+    return;
+  }
+  admin();
+});
+
+document.addEventListener("change", async e => {   // admin image uploads
+  const t = e.target, kind = t.dataset.up; if (!kind || !draft) return;
+  for (const file of t.files) {
+    $("sm").textContent = "Uploading " + file.name + "...";
+    const r = await fetch("/api/upload", { method: "POST", headers: { "content-type": file.type, "x-admin-password": pw }, body: file }).catch(() => null);
+    if (!r || !r.ok) { $("sm").textContent = "Upload failed: " + (r ? await r.text() : "network error"); return; }
+    const { url } = await r.json();
+    if (kind === "week") { const w = draft.WEEKS[+t.dataset.i]; (w.images = w.images || []).push(url); } else draft.SITE[kind] = url;
+  }
+  admin(); $("sm").textContent = "Uploaded. Click Save changes to publish.";
+});
+
+addEventListener("hashchange", render);
+look(); render(); tick(); setInterval(tick, 1000);
+discord(); setInterval(discord, 30000);
+loadUptime(); setInterval(loadUptime, 300000);
+
+/* ---- Visit + error logging to Discord (through /api/log; the webhook stays on the server) ---- */
+const sendLog = o => { try { fetch("/api/log", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(o), keepalive: true }); } catch (e) {} };
+const t0 = Date.now(), trail = [location.hash || "#home"];
+addEventListener("hashchange", () => trail.push(location.hash || "#home"));
+function deviceInfo() {
+  const n = navigator, c = n.connection || {}, uad = n.userAgentData || {};
+  let returning = false; try { returning = !!localStorage.getItem("seen"); localStorage.setItem("seen", "1"); } catch (e) {}
+  return { screen: `${screen.width}x${screen.height}`, viewport: `${innerWidth}x${innerHeight}`, dpr: devicePixelRatio,
+    lang: (n.languages || [n.language]).join(", "), tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    device: `${uad.platform || n.platform} · ${n.maxTouchPoints ? "touch" : "no touch"}${uad.mobile ? " · mobile" : ""}`,
+    theme: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    conn: [c.effectiveType, c.downlink && c.downlink + " Mbps", c.saveData && "data saver"].filter(Boolean).join(" · ") || "-",
+    hw: `${n.hardwareConcurrency || "?"} cores · ${n.deviceMemory || "?"} GB`, query: location.search, returning };
+}
+try { if (!pw && !sessionStorage.getItem("v")) { sessionStorage.setItem("v", "1"); sendLog({ type: "visit", path: location.pathname + location.hash, ref: document.referrer, d: deviceInfo() }); } } catch (e) {}
+addEventListener("pagehide", () => {
+  try { if (!pw && sessionStorage.getItem("v")) navigator.sendBeacon("/api/log", new Blob([JSON.stringify({ type: "leave", secs: Math.round((Date.now() - t0) / 1000), pages: trail.length, trail: trail.slice(0, 15).join(" → ") })], { type: "application/json" })); } catch (e) {}
+});
+let errCount = 0;
+const logErr = (message, source) => { if (errCount++ < 3) sendLog({ type: "error", message: String(message), source, path: location.pathname + location.hash }); };
+addEventListener("error", e => logErr(e.message, `${e.filename}:${e.lineno}`));
+addEventListener("unhandledrejection", e => logErr("Promise: " + (e.reason && e.reason.message || e.reason), "-"));
+
+/* ---- Privacy notice ---- */
+try { if (!localStorage.getItem("pv-ok")) $("pv").hidden = false; } catch (e) { $("pv").hidden = false; }
+$("pvok").onclick = () => { try { localStorage.setItem("pv-ok", "1"); } catch (e) {} $("pv").hidden = true; };
+fetch("/api/data").then(r => r.ok ? r.json() : null).then(d => {
+  if (d && d.WEEKS && d.SITE && !draft) { apply(d); render(); }
+}).catch(() => {});
+</script>
+</body>
+</html>
